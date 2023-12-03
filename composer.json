@@ -28,12 +28,12 @@
   },
   "autoload": {
     "psr-4": {
-      "Phpsa\\LaravelApiController\\": "src"
+      "camilord\\LaravelApiController\\": "src"
     }
   },
   "autoload-dev": {
     "psr-4": {
-      "Phpsa\\LaravelApiController\\Tests\\": "tests"
+      "camilord\\LaravelApiController\\Tests\\": "tests"
     },
     "files": [
       "vendor/phpunit/phpunit/src/Framework/Assert/Functions.php"
@@ -46,7 +46,7 @@
   "extra": {
     "laravel": {
       "providers": [
-        "Phpsa\\LaravelApiController\\ServiceProvider"
+        "camilord\\LaravelApiController\\ServiceProvider"
       ]
     }
   },
