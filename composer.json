@@ -1,11 +1,12 @@
 {
-  "name": "phpsa/laravel-api-controller",
-  "description": "A laravel api base controller with basic CRUD mapped to the model ",
+  "name": "camilord/laravel-api-controller",
+  "description": "A laravel api base controller with basic CRUD mapped to the model. Fork from https://github.com/phpsa/laravel-api-controller",
   "license": "MIT",
   "keywords": [
     "laravel",
     "api",
-    "controller"
+    "controller",
+    "phpsa/laravel-api-controller"
   ],
   "type": "library",
   "authors": [
@@ -27,7 +28,7 @@
   },
   "autoload": {
     "psr-4": {
-      "Phpsa\\LaravelApiController\\": "src"
+      "camilord\\LaravelApiController\\": "src"
     }
   },
   "autoload-dev": {
