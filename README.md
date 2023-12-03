@@ -1,3 +1,6 @@
+## Fork from phpsa/laravel-api-controller
+This repository is required from one work projects I maintained and unfortunately the maintainer remove the `hasRepository` and `BaseRepository` after version 2.0.0.
+
 # Laravel Api Controller
 
 [![For Laravel 5][badge_laravel]](https://github.com/phpsa/laravel-api-controller/issues)
@@ -15,7 +18,7 @@ Basic CRUD API Methods that can be extended for your models by default has a lis
 Install via composer
 
 ```bash
-composer require phpsa/laravel-api-controller
+composer require camilord/laravel-api-controller
 ```
 
 ### Publish Configuration File (optional - if you need to change any of the default configurations)
