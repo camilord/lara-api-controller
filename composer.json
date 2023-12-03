@@ -5,8 +5,7 @@
   "keywords": [
     "laravel",
     "api",
-    "controller",
-    "phpsa/laravel-api-controller"
+    "controller"
   ],
   "type": "library",
   "authors": [
