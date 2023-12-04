@@ -1,5 +1,5 @@
 ## Fork from phpsa/laravel-api-controller
-This repository is required from one work projects I maintained and unfortunately the maintainer remove the `hasRepository` and `BaseRepository` after version 2.0.0.
+This repository is required from one of my work projects I maintained and unfortunately the maintainer remove the `hasRepository` and `BaseRepository` after version 2.0.0.
 
 # Laravel Api Controller
 
