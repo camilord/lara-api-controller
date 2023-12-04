@@ -2,17 +2,13 @@
 
 namespace Phpsa\LaravelApiController\Http\Api\Contracts;
 
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Eloquent\Model;
-use Phpsa\LaravelApiController\Helpers;
+use Illuminate\Support\Facades\Schema;
 use Phpsa\LaravelApiController\Exceptions\ApiException;
-use Phpsa\LaravelApiController\Http\Api\Contracts\HasQueryBuilder;
+use Phpsa\LaravelApiController\Helpers;
 
 trait HasModel
 {
-
-    use HasQueryBuilder;
-
     /**
      * Eloquent model instance.
      *
@@ -53,13 +49,6 @@ trait HasModel
         }
 
         self::$model = $model;
-
-        $this->initBuilder();
-    }
-
-    public function getPostmanModel(): string
-    {
-        return $this->model();
     }
 
     /**

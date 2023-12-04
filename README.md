@@ -1,6 +1,3 @@
-## Fork from phpsa/laravel-api-controller
-This repository is required from one of my work projects I maintained and unfortunately the maintainer remove the `hasRepository` and `BaseRepository` after version 2.0.0.
-
 # Laravel Api Controller
 
 [![For Laravel 5][badge_laravel]](https://github.com/phpsa/laravel-api-controller/issues)
@@ -18,7 +15,7 @@ Basic CRUD API Methods that can be extended for your models by default has a lis
 Install via composer
 
 ```bash
-composer require camilord/laravel-api-controller
+composer require phpsa/laravel-api-controller
 ```
 
 ### Publish Configuration File (optional - if you need to change any of the default configurations)
@@ -29,12 +26,7 @@ php artisan vendor:publish --provider="Phpsa\LaravelApiController\ServiceProvide
 
 ## Usage
 
-**CLI Commands**
-
-* `artisan make:api {ControllerName}` to generate the controller
-* `artisan make:api:policy` to generate a policy file
-* `artisan make:api:resource` to geneate the response resource
-
+**Generate a new Api Controller, Repository and Route via `php artisan make:api {ModelName}`**
 
 This will create a Api/ModelNameController for you and you will have the basic routes in place as follows:
 

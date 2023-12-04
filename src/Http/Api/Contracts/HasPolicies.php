@@ -16,7 +16,7 @@ trait HasPolicies
         $modelPolicy = Gate::getPolicyFor(self::$model);
 
         if ($modelPolicy && method_exists($modelPolicy, 'qualifyCollectionQueryWithUser')) {
-            $modelPolicy->qualifyCollectionQueryWithUser($user, $this->builder);
+            $modelPolicy->qualifyCollectionQueryWithUser($user, $this->repository);
         }
     }
 
@@ -31,7 +31,7 @@ trait HasPolicies
         $modelPolicy = Gate::getPolicyFor(self::$model);
 
         if ($modelPolicy && method_exists($modelPolicy, 'qualifyItemQueryWithUser')) {
-            $modelPolicy->qualifyItemQueryWithUser($user, $this->builder);
+            $modelPolicy->qualifyItemQueryWithUser($user, $this->repository);
         }
     }
 

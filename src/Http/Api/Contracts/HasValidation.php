@@ -21,10 +21,8 @@ trait HasValidation
      *
      * @throws ApiException
      */
-    protected function validateRequestType($request = null): void
+    protected function validateRequestType($request): void
     {
-        $request = $request ?? request();
-
         if (! is_a($request, Request::class)) {
             throw new ApiException(
                 "Request should be an instance of \Illuminate\Http\Request || \Illuminate\Foundation\Http\FormRequest"

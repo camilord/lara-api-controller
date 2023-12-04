@@ -2,40 +2,40 @@
 
 namespace Phpsa\LaravelApiController\Http\Api;
 
-use Illuminate\Support\Facades\DB;
-use Illuminate\Foundation\Bus\DispatchesJobs;
-use Phpsa\LaravelApiController\Events\Created;
-use Phpsa\LaravelApiController\Events\Updated;
-use Illuminate\Routing\Controller as BaseController;
-use Illuminate\Foundation\Validation\ValidatesRequests;
-use Phpsa\LaravelApiController\Exceptions\ApiException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Foundation\Bus\DispatchesJobs;
+use Illuminate\Foundation\Validation\ValidatesRequests;
+use Illuminate\Routing\Controller as BaseController;
+use Illuminate\Support\Facades\DB;
+use Phpsa\LaravelApiController\Contracts\Parser;
+use Phpsa\LaravelApiController\Contracts\Relationships;
+use Phpsa\LaravelApiController\Events\Created;
+use Phpsa\LaravelApiController\Events\Updated;
+use Phpsa\LaravelApiController\Exceptions\ApiException;
 use Phpsa\LaravelApiController\Http\Api\Contracts\HasModel;
-use Phpsa\LaravelApiController\Http\Api\Contracts\HasParser;
-use Phpsa\LaravelApiController\Http\Api\Contracts\HasIncludes;
 use Phpsa\LaravelApiController\Http\Api\Contracts\HasPolicies;
-use Phpsa\LaravelApiController\Http\Api\Contracts\HasResponse;
+use Phpsa\LaravelApiController\Http\Api\Contracts\HasRepository;
 use Phpsa\LaravelApiController\Http\Api\Contracts\HasResources;
+use Phpsa\LaravelApiController\Http\Api\Contracts\HasResponse;
 use Phpsa\LaravelApiController\Http\Api\Contracts\HasValidation;
-use Phpsa\LaravelApiController\Http\Api\Contracts\HasRelationships;
 
+/**
+ * Class Controller.
+ */
 abstract class Controller extends BaseController
 {
-    //Laravel Specific Items
     use AuthorizesRequests;
     use DispatchesJobs;
     use ValidatesRequests;
-
-    //Api=Controller extended traits
     use HasModel;
     use HasPolicies;
+    use HasRepository;
     use HasResources;
     use HasResponse;
     use HasValidation;
-    use HasParser;
-    use HasRelationships;
-    use HasIncludes;
+    use Parser;
+    use Relationships;
 
     /**
      * Set the default sorting for queries.
@@ -59,6 +59,9 @@ abstract class Controller extends BaseController
      */
     protected $maximumLimit = 0;
 
+    protected $includesWhitelist = [];
+
+    protected $includesBlacklist = [];
 
     /**
      * Constructor.
@@ -66,53 +69,53 @@ abstract class Controller extends BaseController
     public function __construct()
     {
         $this->makeModel();
+        $this->makeRepository();
     }
 
     /**
      * Display a listing of the resource.
      * GET /api/{resource}.
      *
-     * @param \Illuminate\Http\Request|\Illuminate\Foundation\Http\FormRequest|null $request
+     * @param \Illuminate\Http\Request|\Illuminate\Foundation\Http\FormRequest $request
      */
-    public function handleIndexAction($request = null, array $extraParams = [])
+    public function handleIndexAction($request, array $extraParams = [])
     {
         $this->handleIndexActionCommon($request, $extraParams);
         $fields = $this->parseFieldParams();
         $limit = $this->parseLimitParams();
 
-        $items = $limit > 0 ? $this->builder->paginate($limit, $fields)->appends($this->originalQueryParams) : $this->builder->get($fields);
+        $items = $limit > 0 ? $this->repository->paginate($limit, $fields)->appends($this->originalQueryParams) : $this->repository->get($fields);
 
         return $this->handleIndexResponse($items);
     }
 
-    public function handleIndexActionRaw($request = null, array $extraParams = [])
+    public function handleIndexActionRaw($request, array $extraParams = [])
     {
         $this->handleIndexActionCommon($request, $extraParams);
         $fields = $this->parseFieldParams();
         $limit = $this->parseLimitParams();
 
-        $items = $limit > 0 ? $this->builder->paginateRaw($limit, $fields)->appends($this->originalQueryParams) : $this->builder->getRaw($fields);
+        $items = $limit > 0 ? $this->repository->paginateRaw($limit, $fields)->appends($this->originalQueryParams) : $this->repository->getRaw($fields);
 
         return $this->handleIndexResponse($items);
     }
 
-    protected function handleIndexActionCommon($request = null, array $extraParams = [])
+    protected function handleIndexActionCommon($request, array $extraParams = [])
     {
+        $this->addCustomParams($request, $extraParams);
         $this->validateRequestType($request);
-        $this->addCustomParams($extraParams);
         $this->authoriseUserAction('viewAny');
         $this->handleCommonActions($request);
         $this->qualifyCollectionQuery();
     }
 
-    protected function handleCommonActions($request = null)
+    protected function handleCommonActions($request)
     {
-        $this->validateRequestType($request);
-        $this->getUriParser();
+        $this->getUriParser($request);
         $this->parseIncludeParams();
         $this->parseSortParams();
         $this->parseFilterParams();
-        $this->parseAllowedScopes();
+        $this->parseAllowedScopes($request);
     }
 
     public function handleStoreOrUpdateAction($request, array $extraParams = [])
@@ -131,8 +134,8 @@ abstract class Controller extends BaseController
      */
     public function handleStoreAction($request, array $extraParams = [])
     {
+        $this->addCustomParams($request, $extraParams);
         $this->validateRequestType($request);
-        $this->addCustomParams($extraParams);
         $this->authoriseUserAction('create');
 
         $this->validate($request, $this->rulesForCreate());
@@ -170,19 +173,19 @@ abstract class Controller extends BaseController
      * GET /api/{resource}/{id}.
      *
      * @param int                                                              $id
-     * @param \Illuminate\Http\Request|\Illuminate\Foundation\Http\FormRequest|null $request
+     * @param \Illuminate\Http\Request|\Illuminate\Foundation\Http\FormRequest $request
      */
-    public function handleShowAction($id, $request = null, array $extraParams = [])
+    public function handleShowAction($id, $request, array $extraParams = [])
     {
+        $this->addCustomParams($request, $extraParams);
         $this->validateRequestType($request);
-        $this->addCustomParams($extraParams);
 
         $this->handleCommonActions($request);
         $fields = $this->parseFieldParams();
         $this->qualifyItemQuery();
 
         try {
-            $item = $this->builder->find($id, $fields);
+            $item = $this->repository->find($id, $fields);
             $this->authoriseUserAction('view', $item);
         } catch (ModelNotFoundException $exception) {
             return $this->errorNotFound('Record not found');
@@ -200,13 +203,13 @@ abstract class Controller extends BaseController
      */
     public function handleUpdateAction($id, $request, array $extraParams = [])
     {
+        $this->addCustomParams($request, $extraParams);
         $this->validateRequestType($request);
-        $this->addCustomParams($extraParams);
 
         $this->handleCommonActions($request);
 
         try {
-            $item = $this->builder->find($id);
+            $item = $this->repository->find($id);
             $this->authoriseUserAction('update', $item);
         } catch (ModelNotFoundException $exception) {
             return $this->errorNotFound('Record does not exist');
@@ -248,15 +251,17 @@ abstract class Controller extends BaseController
      * DELETE /api/{resource}/{id}.
      *
      * @param int                                                              $id
-     * @param \Illuminate\Http\Request|\Illuminate\Foundation\Http\FormRequest|null $request
+     * @param \Illuminate\Http\Request|\Illuminate\Foundation\Http\FormRequest $request
      */
-    public function handleDestroyAction($id, $request = null)
+    public function handleDestroyAction($id, $request)
     {
+        $this->validateRequestType($request);
+
         $this->handleCommonActions($request);
         $this->qualifyItemQuery();
 
         try {
-            $item = $this->builder->find($id);
+            $item = $this->repository->find($id);
             $this->authoriseUserAction('delete', $item);
             $item->delete();
         } catch (ModelNotFoundException $exception) {
