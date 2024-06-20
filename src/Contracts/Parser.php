@@ -34,6 +34,10 @@ trait Parser
      */
     protected function addCustomParams($request, array $extraParams = []): void
     {
+        if (is_array($request)) {
+            $coll = collect($request);
+            $request = $coll->first(); unset($coll);
+        }
         $this->originalQueryParams = $request->query();
 
         $all = $request->all();
